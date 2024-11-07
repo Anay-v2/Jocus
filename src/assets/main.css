@@ -1,3 +1,54 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+* {
+	font-family: 'Faustina', serif;
+	font-optical-sizing: auto;
+    @apply duration-200
+}
+
+.font-alt {
+	font-family: 'Signika Negative', serif;
+	font-optical-sizing: auto;
+}
+
+body {
+    @apply bg-slate-50 dark:bg-slate-950 text-slate-950 dark:text-slate-50 overflow-x-hidden
+}
+
+.navbar {
+    @apply bg-green-400 dark:bg-green-600 flex items-center px-4 w-full
+}
+
+.navbar-center {
+    @apply grid place-items-center
+}
+
+.navbar-menu {
+    @apply flex gap-2
+}
+
+.btn {
+    @apply p-2 rounded-lg cursor-pointer flex items-center justify-center gap-4
+}
+
+.btn-neutral {
+    @apply bg-transparent hover:bg-slate-200 dark:hover:bg-slate-800
+}
+
+.btn-primary {
+    @apply bg-green-400 dark:bg-green-600 hover:bg-green-500
+}
+
+.input {
+    @apply p-2 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-950 dark:text-slate-50
+}
+
+.input input {
+    @apply border-none outline-none h-full bg-slate-200 dark:bg-slate-800 text-slate-950 dark:text-slate-50 placeholder-slate-500 dark:placeholder-slate-400
+}
+
+.input-error {
+    @apply border-[1px] border-red-500
+}

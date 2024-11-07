@@ -19,6 +19,7 @@ provide(dbIJK, db)
 
 function redirect() {
   if(['', 'home', 'auth'].includes(route.name as string) && auth.currentUser) router.push('/dashboard')
+  if(['dashboard'].includes(route.name as string) && !auth.currentUser) router.push('/')
 }
 
 watch(() => route.name, redirect)

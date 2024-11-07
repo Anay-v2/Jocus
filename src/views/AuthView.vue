@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, inject, ref } from 'vue'
 import { KeyRound, Mail, Eye, EyeOff, User } from 'lucide-vue-next'
+import Spinner from '@/components/Spinner.vue'
 import {
 	createUserWithEmailAndPassword,
 	sendEmailVerification,
@@ -112,11 +113,10 @@ async function passwordreset() {
 }
 </script>
 <template>
-	<main class="grid w-screen h-screen shadow-xl place-items-center">
+	<main class="grid w-screen h-screen place-items-center">
 		<div
-			class="card bg-base-200 min-w-[50vw] min-h-[80vh] max-w-[80vw] max-h-[95vh]">
-			<div class="grid card-body place-items-center">
-				<div class="mb-4 text-4xl">
+			class="grid place-items-center bg-slate-100 dark:bg-slate-900 rounded-lg py-8 min-w-[50vw] min-h-[80vh] max-w-[80vw] max-h-screen">
+				<div class="mb-4 text-4xl font-bold font-alt">
 					{{
 						[
 							'Log in',
@@ -131,7 +131,7 @@ async function passwordreset() {
 					v-if="stage === 0 || stage === 1 || stage === 3"
 					class="grid w-full place-items-center">
 					<label
-						class="flex items-center w-[50%] gap-2 mb-8 input input-bordered"
+						class="flex items-center w-[50%] gap-2 mb-8 input"
 						:class="{ 'input-error': !usernameValid }"
 						v-if="stage === 1">
 						<User />
@@ -143,7 +143,7 @@ async function passwordreset() {
 							v-model="username" />
 					</label>
 					<label
-						class="flex items-center w-[50%] gap-2 mb-8 input input-bordered"
+						class="flex items-center w-[50%] gap-2 mb-8 input"
 						:class="{ 'input-error': !emailValid }">
 						<Mail />
 						<input
@@ -154,7 +154,7 @@ async function passwordreset() {
 							v-model="email" />
 					</label>
 					<label
-						class="flex items-center w-[50%] gap-2 input input-bordered"
+						class="flex items-center w-[50%] gap-2 input"
                         v-if="stage !== 3"
 						:class="{
 							'input-error': !passwordValid[0],
@@ -181,7 +181,7 @@ async function passwordreset() {
 						>
 					</div>
 					<label
-						class="flex items-center w-[50%] gap-2 input input-bordered"
+						class="flex items-center w-[50%] gap-2 input"
 						:class="{ 'input-error': cpassword === password }"
 						v-if="stage === 1">
 						<KeyRound />
@@ -200,7 +200,7 @@ async function passwordreset() {
 					<ul class="mt-2 text-center" v-if="stage === 0 || stage === 1">
 						<li
 							v-if="!passwordValid[1] && passwordInputted"
-							class="text-error">
+							class="text-red-500">
 							&times; Is 8 characters long
 						</li>
 						<li
@@ -208,18 +208,18 @@ async function passwordreset() {
 								(!passwordValid[2] || !passwordValid[3]) &&
 								passwordInputted
 							"
-							class="text-error">
+							class="text-red-500">
 							&times; Contains both uppercase and lowercase
 							characters
 						</li>
 						<li
 							v-if="!passwordValid[4] && passwordInputted"
-							class="text-error">
+							class="text-red-500">
 							&times; Contains digits
 						</li>
 						<li
 							v-if="!passwordValid[5] && passwordInputted"
-							class="text-error">
+							class="text-red-500">
 							&times; Contains special characters
 						</li>
 					</ul>
@@ -240,41 +240,38 @@ async function passwordreset() {
 					class="w-[50%] card-actions"
 					v-if="stage === 0">
 					<button
-						class="btn btn-primary btn-block"
+						class="w-full mt-4 btn btn-primary"
 						:disabled="
 							!emailValid || !passwordValid[0] || loading[0]
 						"
 						@click="login()">
-						<span
-							class="loading loading-spinner loading-sm"
-							v-if="loading[0]"></span>
+						<Spinner class="fill-white" v-if="loading[0]" />
 						Log in
 					</button>
                     <button
-						class="text-gray-800 bg-white btn btn-block hover:bg-white btn-icon"
+						class="flex items-center justify-center w-full p-2 text-gray-800 bg-white rounded-lg hover:bg-white btn-icon"
 						@click="googlesignup()"
 						:disabled="loading[2]">
 						<img
 							:src="google"
 							class="w-8 h-8"
 							v-if="!loading[2]" />
-						<span
-							class="loading loading-spinner loading-sm"
-							v-else></span>
+						<Spinner class="fill-black" v-if="loading[2]" />
 						<span class="ml-2">Sign in with Google</span>
 					</button>
+					<div class="flex">
 					Don't have an account yet?
 					<span
-						class="cursor-pointer text-primary"
+						class="cursor-pointer text-primary ml-[1ch]"
 						@click="stage = 1"
 						>Sign up</span
-					>
+					>.</div>
 				</div>
 				<div
 					class="w-[50%] card-actions"
 					v-if="stage === 1">
 					<button
-						class="btn btn-primary btn-block"
+						class="w-full mt-4 btn btn-primary"
 						:disabled="
 							!usernameValid ||
 							!emailValid ||
@@ -283,51 +280,51 @@ async function passwordreset() {
 							loading[1]
 						"
 						@click="signup()">
-						<span
-							class="loading loading-spinner loading-sm"
-							v-if="loading[1]"></span>
+						<Spinner class="fill-white" v-if="loading[1]" />
 						Sign up
 					</button>
 					<button
-						class="text-gray-800 bg-white btn btn-block hover:bg-white btn-icon"
+						class="flex items-center justify-center w-full p-2 text-gray-800 bg-white rounded-lg hover:bg-white btn-icon"
 						@click="googlesignup()"
 						:disabled="loading[2]">
 						<img
 							:src="google"
 							class="w-8 h-8"
 							v-if="!loading[2]" />
-						<span
-							class="loading loading-spinner loading-sm"
-							v-else></span>
+						<Spinner class="fill-black" v-if="loading[2]" />
 						<span class="ml-2">Sign in with Google</span>
 					</button>
+					<div class="flex">
 					Already have an account?
 					<span
-						class="cursor-pointer text-primary"
+						class="cursor-pointer text-primary ml-[1ch]"
 						@click="stage = 0"
 						>Log in</span
-					>
+					>.</div>
 				</div>
 				<div
 					class="w-[50%] card-actions"
 					v-if="stage === 2 || stage === 4">
 					<button
-						class="btn btn-primary btn-block"
+						class="w-full btn btn-primary"
 						@click="router.push('/dashboard')">
 						Continue
 					</button>
 				</div>
                 <div class="w-[50%] card-actions" v-if="stage === 3">
                     <button
-                        class="btn btn-primary btn-block"
+                        class="w-full btn btn-primary"
                         @click="passwordreset()" :disabled="loading[3]">
-                        <span
-                            class="loading loading-spinner loading-sm"
-                            v-if="loading[3]"></span>
+						<Spinner class="fill-white" v-if="loading[3]" />
                         Send reset link
                     </button>
                 </div>
-			</div>
 		</div>
 	</main>
 </template>
+
+<style>
+.card-actions {
+	@apply h-full flex flex-col justify-end gap-4
+}
+</style>
