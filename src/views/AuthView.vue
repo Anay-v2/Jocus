@@ -182,7 +182,7 @@ async function passwordreset() {
 					</div>
 					<label
 						class="flex items-center w-[50%] gap-2 input"
-						:class="{ 'input-error': cpassword === password }"
+						:class="{ 'input-error': cpassword !== password }"
 						v-if="stage === 1">
 						<KeyRound />
 						<input

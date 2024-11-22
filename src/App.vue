@@ -7,6 +7,8 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { appIJK, authIJK, dbIJK } from './utils/injects'
 import { provide, watch } from 'vue'
 import router from './router'
+import { updateTheme } from './utils/theme'
+import FullScreenLoading from './components/FullScreenLoading.vue'
 
 const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
@@ -24,9 +26,13 @@ function redirect() {
 
 watch(() => route.name, redirect)
 onAuthStateChanged(auth, redirect)
-redirect()
+
+updateTheme(document, window)
 </script>
 
 <template>
-  <RouterView />
+  <Suspense timeout="0">
+    <RouterView />
+    <template #fallback><FullScreenLoading /></template>
+  </Suspense>
 </template>

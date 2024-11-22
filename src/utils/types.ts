@@ -1,6 +1,35 @@
 export interface DBUser {
-    uid: string
+    id: string
     username: string
     pic: string
-    friends: string[]
+    friends?: string[]
+    friendreqs?: {
+        id: string
+        timestamp: number
+    }[]
+    notifications?: {
+        id: string
+		pic?: string
+		text: string
+		btn?: {
+			text: string
+			callback: () => void
+			class: any
+		}[]
+	}[]
+    bio?: string
+    date?: string
+    settings?: {
+        friendMsg?: boolean
+        friendChal?: boolean
+    }
+}
+
+export interface DBGame {
+    id: string
+    game: string
+    players: string[]
+    joined: string[]
+    created: number
+    status: 'n' /* not started */ | 's' /* started */ | 'e' /* ended */
 }

@@ -2,53 +2,91 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-	font-family: 'Faustina', serif;
-	font-optical-sizing: auto;
-    @apply duration-200
+@layer base {
+	* {
+		font-family: 'Faustina', serif;
+		font-optical-sizing: auto;
+		@apply duration-200;
+	}
+
+	*:not(.font-alt) {
+		letter-spacing: 0.03rem;
+	}
+
+	.font-alt {
+		font-family: 'Signika Negative', serif;
+		font-optical-sizing: auto;
+	}
+
+	body {
+		@apply bg-slate-50 dark:bg-slate-950 text-slate-950 dark:text-slate-50 overflow-x-hidden h-screen;
+	}
 }
 
-.font-alt {
-	font-family: 'Signika Negative', serif;
-	font-optical-sizing: auto;
+@layer components {
+	.navbar {
+		@apply bg-green-400 dark:bg-green-600 flex items-center px-4 w-full;
+	}
+
+	.navbar-center {
+		@apply grid place-items-center;
+	}
+
+	.navbar-menu {
+		@apply flex gap-2;
+	}
+
+	.btn {
+		@apply p-2 rounded-lg cursor-pointer flex items-center justify-center gap-4;
+	}
+
+    .btn:disabled {
+        @apply cursor-default
+    }
+
+	.btn-neutral {
+		@apply bg-transparent hover:bg-slate-200 dark:hover:bg-slate-800;
+	}
+
+	.btn-primary {
+		@apply bg-green-400 dark:bg-green-600 hover:bg-green-500;
+	}
+
+    .btn-primary:disabled {
+        @apply bg-green-500 dark:bg-green-700 hover:bg-green-500 hover:dark:bg-green-700
+    }
+
+	.btn-error {
+		@apply bg-red-400 dark:bg-red-600 hover:bg-red-500;
+	}
+
+    .btn-error:disabled {
+        @apply bg-red-500 dark:bg-red-700 hover:bg-red-500 hover:dark:bg-red-700
+    }
+
+	.input {
+		@apply p-2 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-950 dark:text-slate-50 flex;
+	}
+
+	.input input, .input textarea {
+		@apply border-none outline-none h-full bg-slate-200 dark:bg-slate-800 text-slate-950 dark:text-slate-50 placeholder-slate-500 dark:placeholder-slate-400;
+	}
+
+	.input-error {
+		@apply border-[1px] border-red-500;
+	}
 }
 
-body {
-    @apply bg-slate-50 dark:bg-slate-950 text-slate-950 dark:text-slate-50 overflow-x-hidden
-}
+@layer utilities {
+	input.arrows-hide::-webkit-outer-spin-button,
+	input.arrows-hide::-webkit-inner-spin-button {
+		-webkit-appearance: none !important;
+		margin: 0 !important;
+	}
 
-.navbar {
-    @apply bg-green-400 dark:bg-green-600 flex items-center px-4 w-full
-}
-
-.navbar-center {
-    @apply grid place-items-center
-}
-
-.navbar-menu {
-    @apply flex gap-2
-}
-
-.btn {
-    @apply p-2 rounded-lg cursor-pointer flex items-center justify-center gap-4
-}
-
-.btn-neutral {
-    @apply bg-transparent hover:bg-slate-200 dark:hover:bg-slate-800
-}
-
-.btn-primary {
-    @apply bg-green-400 dark:bg-green-600 hover:bg-green-500
-}
-
-.input {
-    @apply p-2 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-950 dark:text-slate-50
-}
-
-.input input {
-    @apply border-none outline-none h-full bg-slate-200 dark:bg-slate-800 text-slate-950 dark:text-slate-50 placeholder-slate-500 dark:placeholder-slate-400
-}
-
-.input-error {
-    @apply border-[1px] border-red-500
+	/* Firefox */
+	input[type='number'].arrows-hide {
+		-moz-appearance: textfield !important;
+        appearance: textfield !important;
+	}
 }
