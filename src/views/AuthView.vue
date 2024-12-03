@@ -132,7 +132,7 @@ async function passwordreset() {
 					class="grid w-full place-items-center">
 					<label
 						class="flex items-center w-[50%] gap-2 mb-8 input"
-						:class="{ 'input-error': !usernameValid }"
+						:class="{ 'input-error': !usernameValid && usernameInputted }"
 						v-if="stage === 1">
 						<User />
 						<input
@@ -144,7 +144,7 @@ async function passwordreset() {
 					</label>
 					<label
 						class="flex items-center w-[50%] gap-2 mb-8 input"
-						:class="{ 'input-error': !emailValid }">
+						:class="{ 'input-error': !emailValid && emailInputted }">
 						<Mail />
 						<input
 							type="email"
@@ -157,7 +157,7 @@ async function passwordreset() {
 						class="flex items-center w-[50%] gap-2 input"
                         v-if="stage !== 3"
 						:class="{
-							'input-error': !passwordValid[0],
+							'input-error': !passwordValid[0] && passwordInputted,
 							'mb-8': stage === 1,
 						}">
 						<KeyRound />

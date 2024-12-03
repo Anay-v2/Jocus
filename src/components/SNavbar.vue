@@ -4,8 +4,10 @@ import { signOut, type Auth } from 'firebase/auth'
 import { get, ref as dbref, Database, set } from 'firebase/database'
 import { Bell, Check, Minus, X } from 'lucide-vue-next'
 import { inject, onMounted, ref, watch, type Component, type Ref } from 'vue'
-import type { DBUser } from '@/utils/types'
+import type { DBGame, DBUser } from '@/utils/types'
 import router from '@/router'
+import { fetchUser } from '@/composables/fetch'
+import { games } from '@/utils/games'
 
 const { user } = defineProps<{
 	user: DBUser | null
@@ -15,131 +17,89 @@ const auth = inject(authIJK) as Auth
 const db = inject(dbIJK) as Database
 const dpdwn = ref(false)
 const notifs = ref(false)
-const notifications: Ref<
-	{
-		id: string
-		pic?: string
-		text: string
-		btn?: {
-			text?: string
-			icon?: Component
-			callback: () => void
-			class: any
-		}[]
-	}[]
-> = ref([])
 
 async function logOut() {
 	await signOut(auth)
 	router.push('/')
 }
 
+const requestedUsers: Ref<DBUser[]> = ref([])
+const requestedGames: Ref<[DBGame, DBUser][]> = ref([])
 watch(
-	() => user,
-	async user => {
-		if (user)  {
-				notifications.value = await Promise.all(
-					(
-						(user.friendreqs as {
-							id: string
-							timestamp: number
-						}[]) || []
-					).map(async fr => {
-						const guy = (
-							await get(dbref(db, `/users/${fr.id}`))
-						).val() as DBUser
-						return {
-							id: Math.random().toString(36).slice(2),
-							pic: guy.pic,
-							text:
-								'You have recieved a friend request from ' +
-								guy.username,
-							btn: [
-								{
-									icon: Check,
-									callback: async () => {
-										//@ts-ignore
-										await set(
-											dbref(
-												db,
-												`users/${auth.currentUser?.uid}/friendreqs`
-											),
-											Object.values(
-												user.friendreqs || {}
-											).filter(f => f.id !== fr.id)
-										)
-										await set(
-											dbref(
-												db,
-												`users/${auth.currentUser?.uid}/friends`
-											),
-											Array.from(
-												new Set([
-													...Object.values(
-														user.friends || {}
-													),
-													fr.id,
-												])
-											)
-										)
-										await set(
-											dbref(db, `users/${fr.id}/friends`),
-											Array.from(
-												new Set([
-													...Object.values(
-														guy.friends || {}
-													),
-													auth.currentUser?.uid,
-												])
-											)
-										)
-									},
-									class: { 'bg-green-500': true, 'dark:bg-green-700': true, 'hover:bg-green-600': true },
-								},
-								{
-									icon: X,
-									callback: async () => {
-										await set(
-											dbref(
-												db,
-												`users/${auth.currentUser?.uid}/friendreqs`
-											),
-											Object.values(
-												user.friendreqs || {}
-											).filter(f => f.id !== fr.id)
-										)
-									},
-									class: { 'btn-error': true },
-								}
-							],
-						}
-					})
-				)
-				notifications.value = [...notifications.value, ...(user.notifications?.map(notif => ({
-					...notif,
-					btn: [{
-						icon: Minus,
-						callback: async () => {
-							await set(
-											dbref(
-												db,
-												`users/${auth.currentUser?.uid}/notifications`
-											),
-											Object.values(
-												user.notifications || {}
-											).filter(f => f.id !== notif.id)
-										)
-						},
-						class: { 'btn-neutral': true }
-					}]
-				})) || [])]
-		}
+	() => user?.friendreqs,
+	async () => {
+		requestedUsers.value = await Promise.all(
+			user?.friendreqs?.map(async u => await fetchUser(db, u.id)) || []
+		)
 	},
-	{
-		immediate: true,
-		deep: true
-	}
+	{ immediate: true }
 )
+watch(
+	() => user?.gamereqs,
+	async () => {
+		requestedGames.value = await Promise.all(
+			user?.gamereqs?.map(async u => {
+				const g = (await get(dbref(db, `games/${u}`))).val() as DBGame
+				return [g, await fetchUser(db, g.creator)]
+			}) || []
+		)
+	},
+	{ immediate: true }
+)
+
+async function addFriend(id: string) {
+	declineFriend(id)
+	set(
+		dbref(db, `users/${auth.currentUser?.uid}/friends`),
+		Array.from(new Set([...(user?.friends || []), id]))
+	)
+	set(
+		dbref(db, `users/${id}/friends`),
+		Array.from(
+			new Set([
+				...((await get(dbref(db, `users/${id}/friends`))).val() || []),
+				auth.currentUser?.uid,
+			])
+		)
+	)
+}
+
+async function declineFriend(id: string) {
+	set(
+		dbref(
+			db,
+			`users/${auth.currentUser?.uid}/friendreqs`
+		),
+		(
+			user?.friendreqs || []
+		).filter(f => f.id !== id)
+	)
+}
+
+async function acceptGame(id: string) {
+	removeGame(id)
+	router.push('/game/' + id)
+}
+
+async function declineGame(id: string) {
+	removeGame(id)
+	set(dbref(db, `games/${id}/declined`), Array.from(new Set([
+		...(await get(dbref(db, `games/${id}/declined`)) || []).val(),
+		auth.currentUser?.uid
+	])))
+}
+
+async function removeGame(id: string) {
+	set(
+		dbref(
+			db,
+			`users/${auth.currentUser?.uid}/gamereqs`
+		),
+		(
+			user?.gamereqs || []
+		).filter(f => f !== id)
+	)
+}
 </script>
 <template>
 	<div class="navbar h-[10vh]">
@@ -176,23 +136,54 @@ watch(
 					v-if="notifs"
 					tabindex="0"
 					class="absolute z-50 p-2 bg-green-400 rounded-lg dark:bg-green-600 right-[3vw] max-w-[30vw] text-sm">
-					<li v-if="!notifications.length"><p>No new notifications.</p></li>
+					<li
+						v-if="
+							(user?.notifications?.length || 0) +
+								(user?.friendreqs?.length || 0) +
+								(user?.gamereqs?.length || 0) ===
+							0
+						">
+						<p>No new notifications.</p>
+					</li>
 					<li
 						class="w-full btn btn-primary"
-						v-for="notif in notifications">
+						v-for="fr in requestedUsers">
 						<img
 							class="w-8 h-8 rounded-full"
 							alt="Profile picture"
-							:src="notif.pic"
-							v-if="notif.pic" />
-						{{ notif.text }}
+							:src="fr.pic"
+							v-if="fr.pic" />
+						You have recieved a friend request from
+						{{ fr.username }}
 						<button
-							class="ml-auto btn"
-							:class="btn.class"
-							@click="btn.callback()"
-							v-for="btn in notif.btn">
-							<component :is="btn.icon" />
-							{{ btn.text }}
+							class="ml-auto bg-green-400 btn dark:bg-green-600 hover:bg-green-500"
+							@click="addFriend(fr.id)">
+							<Check />
+						</button>
+						<button
+							class="ml-auto btn btn-error"
+							@click="declineFriend(fr.id)">
+							<X />
+						</button>
+					</li>
+					<li
+						class="w-full btn btn-primary"
+						v-for="fr in requestedGames">
+						<img
+							class="w-8 h-8 rounded-full"
+							alt="Profile picture"
+							:src="fr[1].pic"
+							v-if="fr[1].pic" />
+						{{ fr[1].username }} has invited you to a game of {{ games.find(l => l.id === fr[0].game)?.name || '' }}
+						<button
+							class="ml-auto bg-green-400 btn dark:bg-green-600 hover:bg-green-500"
+							@click="acceptGame(fr[0].id)">
+							<Check />
+						</button>
+						<button
+							class="ml-auto btn btn-error"
+							@click="declineGame(fr[0].id)">
+							<X />
 						</button>
 					</li>
 				</ul>
@@ -210,13 +201,21 @@ watch(
 					v-if="dpdwn"
 					tabindex="0"
 					class="absolute z-50 p-2 bg-green-400 rounded-lg dark:bg-green-600 right-[3vw]">
-					<li class="w-full btn btn-primary" @click="router.push(`/profile/${auth.currentUser?.uid}`)">
+					<li
+						class="w-full btn btn-primary"
+						@click="
+							router.push(`/profile/${auth.currentUser?.uid}`)
+						">
 						Profile
 					</li>
-					<li class="w-full btn btn-primary" @click="router.push(`/profile/settings`)">
+					<li
+						class="w-full btn btn-primary"
+						@click="router.push(`/profile/settings`)">
 						Settings
 					</li>
-					<li class="w-full btn btn-primary" @click="logOut()">
+					<li
+						class="w-full btn btn-primary"
+						@click="logOut()">
 						Logout
 					</li>
 				</ul>

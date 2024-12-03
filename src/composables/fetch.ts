@@ -6,8 +6,16 @@ import { type Ref, ref } from "vue"
 export async function useDBUser(auth: Auth, db: Database) {
     let dbuser: Ref<DBUser> = ref(await fetchUser(db, auth.currentUser?.uid || ''))
     let friends: Ref<DBUser[]> = ref([])
-    dbuser.value.friends?.forEach(async f =>
-        friends.value.push(await fetchUser(db, f))
+    onValue(
+        dbref(db, `users/${auth.currentUser?.uid}/friends`),
+        async (snap) => {
+            friends.value = await Promise.all((snap.val() as string[]).map(async u => await fetchUser(db, u)) || [])
+            friends.value.forEach((friend, i) => {
+                onValue(dbref(db, `users/${friend.id}`), snap2 => {
+                    friends.value[i] = snap2.val()
+                })
+            })
+        }
     )
     onValue(
         dbref(db, `users/${auth.currentUser?.uid}`),
@@ -23,12 +31,12 @@ export async function useDBUser(auth: Auth, db: Database) {
     return { dbuser, friends }
 }
 
-async function fetchUser(db: Database, uid: string) {
+export async function fetchUser(db: Database, uid: string) {
 	return (await get(dbref(db, `users/${uid}`))).val() as DBUser
 }
 
 export async function useReactiveDBRef(db: Database, path: DatabaseReference) {
-    const r = ref(undefined)
+    const r = ref(undefined) as Ref<any>
 
     onValue(path, (snap) => {
         r.value = snap.val()

@@ -40,7 +40,7 @@
 		@apply p-2 rounded-lg cursor-pointer flex items-center justify-center gap-4;
 	}
 
-    .btn:disabled {
+    .btn[disabled="true"], .btn[disabled=""] {
         @apply cursor-default
     }
 
@@ -48,11 +48,15 @@
 		@apply bg-transparent hover:bg-slate-200 dark:hover:bg-slate-800;
 	}
 
+	.btn-neutral[disabled="true"], .btn-neutral[disabled=""] {
+		@apply hover:bg-transparent dark:hover:bg-transparent
+	}
+
 	.btn-primary {
 		@apply bg-green-400 dark:bg-green-600 hover:bg-green-500;
 	}
 
-    .btn-primary:disabled {
+    .btn-primary[disabled="true"], .btn-primary[disabled=""] {
         @apply bg-green-500 dark:bg-green-700 hover:bg-green-500 hover:dark:bg-green-700
     }
 
@@ -60,7 +64,7 @@
 		@apply bg-red-400 dark:bg-red-600 hover:bg-red-500;
 	}
 
-    .btn-error:disabled {
+    .btn-error[disabled="true"], .btn-error[disabled=""] {
         @apply bg-red-500 dark:bg-red-700 hover:bg-red-500 hover:dark:bg-red-700
     }
 

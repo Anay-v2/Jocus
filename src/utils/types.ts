@@ -7,6 +7,7 @@ export interface DBUser {
         id: string
         timestamp: number
     }[]
+    gamereqs?: string[]
     notifications?: {
         id: string
 		pic?: string
@@ -33,7 +34,9 @@ export interface DBGame {
     id: string
     game: string
     players: string[]
-    joined: string[]
+    joined?: string[]
+    declined?: string[]
     created: number
+    creator: string
     status: 'n' /* not started */ | 's' /* started */ | 'e' /* ended */
 }
