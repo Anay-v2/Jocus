@@ -165,7 +165,7 @@ watch(
 				</li>
 			</ul>
 		</div>
-		<div class="flex gap-4">
+		<div class="flex items-center gap-4">
 			<div>
 				<button
 					class="rounded-full btn btn-primary"
@@ -210,18 +210,14 @@ watch(
 					v-if="dpdwn"
 					tabindex="0"
 					class="absolute z-50 p-2 bg-green-400 rounded-lg dark:bg-green-600 right-[3vw]">
-					<li class="w-full btn btn-primary">
-						<RouterLink :to="`/profile/${auth.currentUser?.uid}`"
-							>Profile</RouterLink
-						>
+					<li class="w-full btn btn-primary" @click="router.push(`/profile/${auth.currentUser?.uid}`)">
+						Profile
 					</li>
-					<li class="w-full btn btn-primary">
-						<RouterLink :to="`/profile/settings`"
-							>Settings</RouterLink
-						>
+					<li class="w-full btn btn-primary" @click="router.push(`/profile/settings`)">
+						Settings
 					</li>
-					<li class="w-full btn btn-primary">
-						<a @click="logOut()">Logout</a>
+					<li class="w-full btn btn-primary" @click="logOut()">
+						Logout
 					</li>
 				</ul>
 			</div>

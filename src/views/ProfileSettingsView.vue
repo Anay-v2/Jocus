@@ -267,10 +267,9 @@ async function removeFriend(id: string) {
 			</template>
 			<template v-if="p === 'f'">
 				<h1 class="mb-8 text-4xl font-alt">Friends</h1>
-				<div class="inline-flex items-center mb-8 cursor-pointer">
+				<div class="inline-flex items-center mb-8 cursor-pointer" @click="friendMsg = !friendMsg">
 					<input
 						type="checkbox"
-						value=""
 						class="sr-only peer"
 						v-model="friendMsg" />
 					<div
@@ -278,10 +277,9 @@ async function removeFriend(id: string) {
 					<span class="ms-3">Allow my friends to message me</span>
 				</div>
 				<br />
-				<div class="inline-flex items-center mb-8 cursor-pointer">
+				<div class="inline-flex items-center mb-8 cursor-pointer" @click="friendChal = !friendChal">
 					<input
 						type="checkbox"
-						value=""
 						class="sr-only peer"
                         v-model="friendChal" />
 					<div
@@ -301,6 +299,7 @@ async function removeFriend(id: string) {
 								class="w-10 h-10 rounded-full" />
 						</div>
 						{{ friend.username }}
+						<span class="text-neutral-700 dark:text-neutral-300">({{ friend.status?.state || 'offline' }})</span>
 						<button class="ml-auto btn btn-primary">
 							<!-- TODO -->
 							<MessageCircle />

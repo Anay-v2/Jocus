@@ -2,7 +2,7 @@
 import { RouterView, useRoute } from 'vue-router'
 import { firebaseConfig } from './utils/firebase'
 import { initializeApp } from 'firebase/app'
-import { getDatabase } from 'firebase/database'
+import { getDatabase, onValue, ref as dbref, set, onDisconnect } from 'firebase/database'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { appIJK, authIJK, dbIJK } from './utils/injects'
 import { provide, watch } from 'vue'
@@ -20,8 +20,19 @@ provide(authIJK, auth)
 provide(dbIJK, db)
 
 function redirect() {
+  console.log(auth.currentUser, route.name)
   if(['', 'home', 'auth'].includes(route.name as string) && auth.currentUser) router.push('/dashboard')
   if(['dashboard'].includes(route.name as string) && !auth.currentUser) router.push('/')
+  if(auth.currentUser) {
+    const userStatusRef = dbref(db, `users/${auth.currentUser.uid}/status`)
+    const connectedRef = dbref(db, `.info/connected`)
+    onValue(connectedRef, (snapshot) => {
+      if (snapshot.val() === true) {
+        set(userStatusRef, { state: `online`, lastChanged: Date.now() })
+        onDisconnect(userStatusRef).set({ state: `offline`, lastChanged: Date.now() })
+      }
+    })
+  }
 }
 
 watch(() => route.name, redirect)

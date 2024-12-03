@@ -73,7 +73,7 @@ const dpdwn: Ref<{
 		<h1 class="text-4xl font-bold font-alt">Hi, {{ dbuser?.username }}</h1>
 		<h2 class="text-3xl font-semibold font-alt">Friends</h2>
 		<div class="flex w-full gap-2">
-			<div
+			<div class="relative"
 				v-for="friend in friends"
 				:key="friend.id">
 				<div class="rounded-full cursor-pointer btn btn-neutral" @click="dpdwn[friend.id] = !dpdwn[friend.id]">
@@ -81,10 +81,25 @@ const dpdwn: Ref<{
 						:src="friend.pic"
 						class="w-8 h-8 rounded-full" />
 				</div>
+				<svg class="absolute bottom-1 right-1"
+							width="9"
+							height="9"
+							viewBox="0 0 9 9"
+							xmlns="http://www.w3.org/2000/svg">
+							<circle
+								cx="4.5"
+								cy="4.5"
+								r="4.5"
+								:fill="
+									friend.status?.state === 'online'
+										? '#9CED75'
+										: '#FF6C6C'
+								" />
+						</svg>
 				<ul
 					v-if="dpdwn[friend.id]"
 					tabindex="0"
-					class="absolute z-50 p-2 bg-green-400 rounded-lg dark:bg-green-600 right-[3vw]">
+					class="absolute left-[3vw] z-50 p-2 bg-green-400 rounded-lg dark:bg-green-600">
 					<li class="w-full btn btn-primary">
 						<RouterLink :to="`/profile/${friend.id}`"
 							>View Profile</RouterLink
@@ -155,7 +170,7 @@ const dpdwn: Ref<{
 				</form>
 				<h3 class="text-2xl font-bold font-alt">{{ game?.name }}</h3>
 				<div
-					class="py-4"
+					class="px-4"
 					v-html="game?.rules || ''"></div>
 			</div>
 		</dialog>

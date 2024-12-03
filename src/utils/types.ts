@@ -23,6 +23,10 @@ export interface DBUser {
         friendMsg?: boolean
         friendChal?: boolean
     }
+    status?: {
+        state: 'online' | 'offline'
+        lastChanged: number
+    }
 }
 
 export interface DBGame {
