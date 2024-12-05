@@ -17,6 +17,11 @@ if (!game) router.push('/')
 const auth = inject(authIJK) as Auth
 const db = inject(dbIJK) as Database
 const { dbuser, friends } = await useDBUser(auth, db)
+const sortedFriends = computed(() => remFriends.value.sort((a,b) => {
+	const diff = (a.status?.state === 'online' ? 1 : 0) - (b.status?.state === 'online' ? 1 : 0)
+	if(diff !== 0) return -diff
+	return (a.status?.lastChanged || 0) - (b.status?.lastChanged || 0)
+}))
 const g = ref(game === 'n' ? '' : game?.id || '')
 const dpdwn = ref(false)
 
@@ -151,11 +156,11 @@ watch(
 				<ul
 					v-if="dpdwn"
 					tabindex="0"
-					class="absolute w-[20vw] left-0 z-50 p-2 bg-green-400 rounded-lg dark:bg-green-600">
-					<li class="flex w-full gap-2 btn btn-primary" v-for="friend in remFriends" :disabled="!friend.status || friend.status.state === 'offline'" @click="(!friend.status || friend.status.state === 'offline') ? null : addFriend(friend.id)">
+					class="absolute w-[20vw] left-0 z-50 p-2 bg-green-400 rounded-lg dark:bg-green-600 border-2 border-green-800">
+					<li class="flex w-full gap-2 btn btn-primary" v-for="friend in sortedFriends" :disabled="!friend.status || friend.status.state === 'offline'" @click="(!friend.status || friend.status.state === 'offline') ? null : addFriend(friend.id)">
 						<img class="size-8" :src="friend.pic"> {{ friend.username }} <span class="text-neutral-700 dark:text-neutral-300">{{ friend.status?.state || 'offline' }}</span>
 					</li>
-					<li class="italic" v-if="remFriends.length === 0">
+					<li class="italic" v-if="sortedFriends.length === 0">
 						No players left.
 					</li>
 				</ul>

@@ -40,3 +40,13 @@ export interface DBGame {
     creator: string
     status: 'n' /* not started */ | 's' /* started */ | 'e' /* ended */
 }
+
+export interface UNOCard {
+    type: 'u'
+    card: `${'b' | 'g' | 'y' | 'r'}${'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'0'|'s'|'f'|'p'}` | 'w4' | 'wc' | 'b'
+}
+
+export interface PCard {
+    type: 'p'
+    card: `${'h' | 's' | 'c' | 'd'}${'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'11'|'12'|'13'}` | 'j1' | 'j2' | 'b'
+}

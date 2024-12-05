@@ -15,8 +15,7 @@ const { user } = defineProps<{
 
 const auth = inject(authIJK) as Auth
 const db = inject(dbIJK) as Database
-const dpdwn = ref(false)
-const notifs = ref(false)
+const dpdwn = ref(0)
 
 async function logOut() {
 	await signOut(auth)
@@ -84,7 +83,7 @@ async function acceptGame(id: string) {
 async function declineGame(id: string) {
 	removeGame(id)
 	set(dbref(db, `games/${id}/declined`), Array.from(new Set([
-		...(await get(dbref(db, `games/${id}/declined`)) || []).val(),
+		...((await get(dbref(db, `games/${id}/declined`))).val() || []),
 		auth.currentUser?.uid
 	])))
 }
@@ -129,13 +128,13 @@ async function removeGame(id: string) {
 			<div>
 				<button
 					class="rounded-full btn btn-primary"
-					@click="notifs = !notifs">
+					@click="dpdwn = (dpdwn === 1) ? 0 : 1">
 					<Bell />
 				</button>
 				<ul
-					v-if="notifs"
+					v-if="dpdwn === 1"
 					tabindex="0"
-					class="absolute z-50 p-2 bg-green-400 rounded-lg dark:bg-green-600 right-[3vw] max-w-[30vw] text-sm">
+					class="absolute z-50 p-2 bg-green-400 rounded-lg dark:bg-green-600 right-[3vw] max-w-[30vw] text-sm border-2 border-green-800">
 					<li
 						v-if="
 							(user?.notifications?.length || 0) +
@@ -156,7 +155,7 @@ async function removeGame(id: string) {
 						You have recieved a friend request from
 						{{ fr.username }}
 						<button
-							class="ml-auto bg-green-400 btn dark:bg-green-600 hover:bg-green-500"
+							class="ml-auto bg-green-500 btn dark:bg-green-700 hover:bg-green-600"
 							@click="addFriend(fr.id)">
 							<Check />
 						</button>
@@ -176,7 +175,7 @@ async function removeGame(id: string) {
 							v-if="fr[1].pic" />
 						{{ fr[1].username }} has invited you to a game of {{ games.find(l => l.id === fr[0].game)?.name || '' }}
 						<button
-							class="ml-auto bg-green-400 btn dark:bg-green-600 hover:bg-green-500"
+							class="ml-auto bg-green-500 btn dark:bg-green-700 hover:bg-green-600"
 							@click="acceptGame(fr[0].id)">
 							<Check />
 						</button>
@@ -191,16 +190,16 @@ async function removeGame(id: string) {
 			<div>
 				<button
 					class="rounded-full btn btn-primary"
-					@click="dpdwn = !dpdwn">
+					@click="dpdwn = (dpdwn === 2) ? 0 : 2">
 					<img
 						class="w-8 h-8 rounded-full"
 						alt="Your profile picture"
 						:src="user?.pic" />
 				</button>
 				<ul
-					v-if="dpdwn"
+					v-if="dpdwn === 2"
 					tabindex="0"
-					class="absolute z-50 p-2 bg-green-400 rounded-lg dark:bg-green-600 right-[3vw]">
+					class="absolute z-50 p-2 bg-green-400 rounded-lg dark:bg-green-600 right-[3vw] border-2 border-green-800">
 					<li
 						class="w-full btn btn-primary"
 						@click="

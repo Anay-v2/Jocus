@@ -43,7 +43,7 @@ updateTheme(document, window)
 
 <template>
   <Suspense timeout="0">
-    <RouterView />
+    <RouterView :key="route.fullPath" />
     <template #fallback><FullScreenLoading /></template>
   </Suspense>
 </template>

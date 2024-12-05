@@ -10,9 +10,10 @@ export async function useDBUser(auth: Auth, db: Database) {
         dbref(db, `users/${auth.currentUser?.uid}/friends`),
         async (snap) => {
             friends.value = await Promise.all((snap.val() as string[]).map(async u => await fetchUser(db, u)) || [])
-            friends.value.forEach((friend, i) => {
+            console.log(friends.value)
+            friends.value.forEach((friend) => {
                 onValue(dbref(db, `users/${friend.id}`), snap2 => {
-                    friends.value[i] = snap2.val()
+                    friends.value[friends.value.findIndex(f => f.id === friend.id)] = snap2.val()
                 })
             })
         }

@@ -2,18 +2,23 @@
 import SNavbar from '@/components/SNavbar.vue'
 import { games, type Game } from '@/utils/games'
 import { authIJK, dbIJK } from '@/utils/injects'
-import type { DBUser } from '@/utils/types'
-import { type Auth, onAuthStateChanged } from 'firebase/auth'
-import { Database, get, ref as dbref, set, onValue } from 'firebase/database'
+import { type Auth } from 'firebase/auth'
+import { Database, get, ref as dbref, set } from 'firebase/database'
 import { Users, Spade, Plus, IdCard, X } from 'lucide-vue-next'
-import { inject, type Ref, ref, useTemplateRef } from 'vue'
+import { computed, inject, type Ref, ref, useTemplateRef } from 'vue'
 import FullScreenLoading from '@/components/FullScreenLoading.vue'
 import { useDBUser } from '@/composables/fetch'
+import router from '@/router'
 
 const ploading = ref(false)
 const auth = inject(authIJK) as Auth
 const db = inject(dbIJK) as Database
 const { dbuser, friends } = await useDBUser(auth, db)
+const sortedFriends = computed(() => friends.value.sort((a,b) => {
+	const diff = (a.status?.state === 'online' ? 1 : 0) - (b.status?.state === 'online' ? 1 : 0)
+	if(diff !== 0) return -diff
+	return (a.status?.lastChanged || 0) - (b.status?.lastChanged || 0)
+}))
 const game: Ref<Game | null> = ref(null)
 const rulesModal = useTemplateRef('rules')
 const friendModal = useTemplateRef('friend')
@@ -59,9 +64,7 @@ async function addFriend() {
 	friendModal.value?.close()
 }
 
-const dpdwn: Ref<{
-	[key: string]: boolean
-}> = ref({})
+const fdpdwn = ref('')
 </script>
 <template>
 	<header v-if="!ploading">
@@ -74,9 +77,9 @@ const dpdwn: Ref<{
 		<h2 class="text-3xl font-semibold font-alt">Friends</h2>
 		<div class="flex w-full gap-2">
 			<div class="relative"
-				v-for="friend in friends"
+				v-for="friend in sortedFriends"
 				:key="friend.id">
-				<div class="rounded-full cursor-pointer btn btn-neutral" @click="dpdwn[friend.id] = !dpdwn[friend.id]">
+				<div class="rounded-full cursor-pointer btn btn-neutral" @click="fdpdwn = (fdpdwn === friend.id) ? '' : friend.id">
 					<img
 						:src="friend.pic"
 						class="w-8 h-8 rounded-full" />
@@ -97,9 +100,9 @@ const dpdwn: Ref<{
 								" />
 						</svg>
 				<ul
-					v-if="dpdwn[friend.id]"
+					v-if="fdpdwn === friend.id"
 					tabindex="0"
-					class="absolute left-[3vw] z-50 p-2 bg-green-400 rounded-lg dark:bg-green-600">
+					class="absolute left-[3vw] z-50 p-2 bg-green-400 rounded-lg dark:bg-green-600 border-2 border-green-800">
 					<li class="w-full btn btn-primary">
 						<RouterLink :to="`/profile/${friend.id}`"
 							>View Profile</RouterLink
@@ -146,13 +149,13 @@ const dpdwn: Ref<{
 				</div>
 				<div class="flex justify-end gap-4 mt-auto">
 					<button
-						class="btn bg-fuchsia-400 dark:bg-fuchsia-600 hover:bg-fuchsia-500"
+						class="btn bg-fuchsia-500 dark:bg-fuchsia-700 hover:bg-fuchsia-600"
 						@click="showRules(game.id)">
 						View rules
 					</button>
 					<button
 						class="bg-green-500 dark:bg-green-700 hover:bg-green-600 dark:hover:bg-green-800 btn"
-						@click="$router.push(`/new/${game.id}`)">
+						@click="router.push(`/new/${game.id}`)">
 						Play
 					</button>
 				</div>
