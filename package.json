@@ -13,6 +13,7 @@
   "dependencies": {
     "firebase": "^11.0.1",
     "lucide-vue-next": "^0.454.0",
+    "uno-engine": "^2.0.3",
     "vue": "^3.5.12",
     "vue-router": "^4.4.5"
   },

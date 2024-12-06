@@ -4,7 +4,7 @@ import { games, type Game } from '@/utils/games'
 import { authIJK, dbIJK } from '@/utils/injects'
 import { type Auth } from 'firebase/auth'
 import { Database, get, ref as dbref, set } from 'firebase/database'
-import { Users, Spade, Plus, IdCard, X } from 'lucide-vue-next'
+import { Users, Spade, Plus, IdCard, X, Search } from 'lucide-vue-next'
 import { computed, inject, type Ref, ref, useTemplateRef } from 'vue'
 import FullScreenLoading from '@/components/FullScreenLoading.vue'
 import { useDBUser } from '@/composables/fetch'
@@ -21,7 +21,6 @@ const sortedFriends = computed(() => friends.value.sort((a,b) => {
 }))
 const game: Ref<Game | null> = ref(null)
 const rulesModal = useTemplateRef('rules')
-const friendModal = useTemplateRef('friend')
 
 function showRules(gameid: string) {
 	game.value = games.filter(l => l.id === gameid)[0]
@@ -36,13 +35,11 @@ async function addFriend() {
 	if (friendID.value === auth.currentUser?.uid) {
 		friendToast.value = `You can't friend yourself!`
 		friendID.value = ''
-		friendModal.value?.close()
 		return
 	}
 	if ((dbuser.value?.friends || []).includes(friendID.value)) {
 		friendToast.value = `That user is already your friend!`
 		friendID.value = ''
-		friendModal.value?.close()
 		return
 	}
 	const friend = (await get(dbref(db, `users/${friendID.value}`))).val()
@@ -61,7 +58,6 @@ async function addFriend() {
 		friendToast.value = `User not found. Try double-checking the ID.`
 	}
 	friendID.value = ''
-	friendModal.value?.close()
 }
 
 const fdpdwn = ref('')
@@ -114,11 +110,32 @@ const fdpdwn = ref('')
 					</li>
 				</ul>
 			</div>
-			<button
-				class="rounded-full btn bg-slate-100 dark:bg-slate-900"
-				@click="friendModal?.showModal()">
-				<Plus />
-			</button>
+			<div class="relative">
+				<button
+					class="rounded-full btn bg-slate-100 dark:bg-slate-900"
+					@click="fdpdwn = (fdpdwn === 'a') ? '' : 'a'">
+					<Plus />
+				</button>
+				<div
+					v-if="fdpdwn === 'a'"
+					tabindex="0"
+					class="absolute left-[3vw] z-50 p-2 bg-green-400 rounded-lg dark:bg-green-600 border-2 border-green-800 flex gap-2">
+					<div class="items-center input">
+						<IdCard />
+						<input
+							class="ml-2"
+							type="text"
+							placeholder="Enter ID"
+							v-model="friendID" />
+					</div>
+					<button class="bg-green-500 btn dark:bg-green-700 hover:bg-green-600 dark:hover:bg-green-800" @click="addFriend()">
+						<Plus />
+					</button>
+					<button class="btn btn-error" @click="fdpdwn = ''">
+						<X />
+					</button>
+				</div>
+			</div>
 		</div>
 		<h2 class="text-3xl font-semibold font-alt">Games</h2>
 		<div class="flex w-full gap-4">
@@ -175,36 +192,6 @@ const fdpdwn = ref('')
 				<div
 					class="px-4"
 					v-html="game?.rules || ''"></div>
-			</div>
-		</dialog>
-		<dialog
-			ref="friend"
-			class="pt-8 rounded-lg bg-slate-50 dark:bg-slate-950 text-slate-950 dark:text-slate-50 w-[60vw] h-[60vh]">
-			<div class="grid place-items-center">
-				<form method="dialog">
-					<button
-						class="absolute rounded-full btn btn-sm btn-neutral right-2 top-2">
-						<X />
-					</button>
-				</form>
-				<h3 class="text-2xl font-bold font-alt">Add friend</h3>
-			</div>
-			<div class="grid w-full h-full place-items-center">
-				<div class="grid my-4 place-items-center">
-					<div class="items-center input">
-						<IdCard />
-						<input
-							class="ml-2"
-							type="text"
-							placeholder="Enter ID"
-							v-model="friendID" />
-						<button
-							class="btn btn-primary"
-							@click="addFriend()">
-							<Plus />
-						</button>
-					</div>
-				</div>
 			</div>
 		</dialog>
 		<div

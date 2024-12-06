@@ -155,7 +155,7 @@ async function removeGame(id: string) {
 						You have recieved a friend request from
 						{{ fr.username }}
 						<button
-							class="ml-auto bg-green-500 btn dark:bg-green-700 hover:bg-green-600"
+							class="ml-auto bg-green-500 btn dark:bg-green-700 hover:bg-green-600 dark:hover:bg-green-800"
 							@click="addFriend(fr.id)">
 							<Check />
 						</button>
@@ -175,7 +175,7 @@ async function removeGame(id: string) {
 							v-if="fr[1].pic" />
 						{{ fr[1].username }} has invited you to a game of {{ games.find(l => l.id === fr[0].game)?.name || '' }}
 						<button
-							class="ml-auto bg-green-500 btn dark:bg-green-700 hover:bg-green-600"
+							class="ml-auto bg-green-500 btn dark:bg-green-700 hover:bg-green-600 dark:hover:bg-green-800"
 							@click="acceptGame(fr[0].id)">
 							<Check />
 						</button>

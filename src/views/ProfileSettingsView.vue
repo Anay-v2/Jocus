@@ -15,6 +15,7 @@ import {
 	Save,
 	MessageCircle,
 	X,
+	Upload,
 } from 'lucide-vue-next'
 import { useDBUser } from '@/composables/fetch'
 import Spinner from '@/components/Spinner.vue'
@@ -117,13 +118,13 @@ watch(() => friendMsg, updateFriendSettings)
 watch(() => friendChal, updateFriendSettings)
 
 async function updateFriendSettings() {
-    await set(dbref(db, `users/${auth.currentUser?.uid}/`), {
-        ...dbuser,
-        settings: {
-            friendMsg: friendMsg.value,
-            friendChal: friendChal.value,
-        }
-    })
+	await set(dbref(db, `users/${auth.currentUser?.uid}/`), {
+		...dbuser,
+		settings: {
+			friendMsg: friendMsg.value,
+			friendChal: friendChal.value,
+		},
+	})
 }
 
 async function removeFriend(id: string) {
@@ -135,11 +136,31 @@ async function removeFriend(id: string) {
 	await set(dbref(db, `users/${id}/notifications`), [
 		...((await get(dbref(db, `users/${id}/notifications`))).val() || []),
 		{
-            id: Math.random().toString(36).slice(2),
+			id: Math.random().toString(36).slice(2),
 			pic: dbuser.value.pic,
 			text: `${dbuser.value.username} has unfriended you.`,
 		},
 	])
+}
+
+async function handleUpload(e: Event) {
+	const file = Array.from((e.target as HTMLInputElement).files || [])[0]
+	if (!file) return
+	return await new Promise<string>((resolve, reject) => {
+		const reader = new FileReader()
+		reader.onload = () => {
+			resolve(reader.result as string)
+		}
+		reader.onerror = () => reject(reader.error)
+		reader.readAsDataURL(file)
+	})
+}
+
+async function uploadPFP(e: Event) {
+	const pfp = await handleUpload(e) || `https://ui-avatars.com/api/?name=${encodeURIComponent(
+					dbuser.value.username
+			  )}&size=12`
+	await set(dbref(db, `users/${auth.currentUser?.uid}/pic`), pfp)
 }
 </script>
 <template>
@@ -179,9 +200,26 @@ async function removeFriend(id: string) {
 		<div class="h-full w-[80vw] p-4 bg-slate-100 dark:bg-slate-900">
 			<template v-if="p === 'p'">
 				<h1 class="mb-8 text-4xl font-alt">Profile Settings</h1>
-				<img
-					class="w-16 h-16 rounded-full"
-					:src="dbuser.pic" />
+				<div
+					class="rounded-full size-16"
+					:style="{
+						'background-image': `url('${dbuser.pic}')`,
+						'background-size': 'contain',
+						'background-repeat': 'no-repeat',
+						'background-position': 'center'
+					}">
+					<label
+						for="file"
+						class="grid w-full h-full bg-black bg-opacity-50 rounded-full opacity-0 cursor-pointer hover:opacity-100 place-items-center">
+						<Upload />
+					</label>
+					<input
+						type="file"
+						id="file"
+						class="hidden"
+						accept=".png,.jpg,.jpeg,.webp"
+						@input="uploadPFP" />
+				</div>
 				<div
 					class="gap-4 my-8 input"
 					:class="{ 'input-error': !usernameValid }">
@@ -267,7 +305,9 @@ async function removeFriend(id: string) {
 			</template>
 			<template v-if="p === 'f'">
 				<h1 class="mb-8 text-4xl font-alt">Friends</h1>
-				<div class="inline-flex items-center mb-8 cursor-pointer" @click="friendMsg = !friendMsg">
+				<div
+					class="inline-flex items-center mb-8 cursor-pointer"
+					@click="friendMsg = !friendMsg">
 					<input
 						type="checkbox"
 						class="sr-only peer"
@@ -277,11 +317,13 @@ async function removeFriend(id: string) {
 					<span class="ms-3">Allow my friends to message me</span>
 				</div>
 				<br />
-				<div class="inline-flex items-center mb-8 cursor-pointer" @click="friendChal = !friendChal">
+				<div
+					class="inline-flex items-center mb-8 cursor-pointer"
+					@click="friendChal = !friendChal">
 					<input
 						type="checkbox"
 						class="sr-only peer"
-                        v-model="friendChal" />
+						v-model="friendChal" />
 					<div
 						class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
 					<span class="ms-3">Allow my friends to challenge me</span>
@@ -299,7 +341,9 @@ async function removeFriend(id: string) {
 								class="w-10 h-10 rounded-full" />
 						</div>
 						{{ friend.username }}
-						<span class="text-neutral-700 dark:text-neutral-300">({{ friend.status?.state || 'offline' }})</span>
+						<span class="text-neutral-700 dark:text-neutral-300"
+							>({{ friend.status?.state || 'offline' }})</span
+						>
 						<button class="ml-auto btn btn-primary">
 							<!-- TODO -->
 							<MessageCircle />
